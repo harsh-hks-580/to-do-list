@@ -69,6 +69,22 @@ router.get("/:id/tags", async (req, res) => {
   }
 });
 
+//Patch a task by id
+router.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedTaskDoc = await Task.findByIdAndUpdate(
+      id,
+      { $set: req.body },
+      { returnOriginal: false }
+    );
+    res.json(updatedTaskDoc);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json("Error updating task with id: " + id);
+  }
+});
+
 //Delete task by id
 router.delete("/:id", async (req, res) => {
   const session = await mongoose.startSession();
