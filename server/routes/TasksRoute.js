@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Types;
 const Task = require("../models/Task");
 const Tags = require("../models/Tags");
-const TaskUserJoin = require("../models/TaskUserJoin");
 const TagTaskJoin = require("../models/TagTaskJoin");
 
 //Create a new task
@@ -14,10 +13,7 @@ router.post("/create", async (req, res) => {
     const taskDoc = await Task.create({
       title: req.body.title,
       description: req.body.description,
-    });
-    TaskUserJoin.create({
-      user_id: req.body.user_id,
-      task_id: taskDoc._id,
+      user_id: req.userInfo.id,
     });
 
     const tags = req.body.tags;
@@ -62,6 +58,7 @@ router.get("/:id/tags", async (req, res) => {
 router.post("/search", async (req, res) => {
   try {
     var query = Task.find();
+    query.find({ user_id: req.userInfo.id });
 
     if (req.body.id) {
       if (!ObjectId.isValid(req.body.id)) throw new Error("Invalid id");
