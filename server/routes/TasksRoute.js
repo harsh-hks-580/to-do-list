@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const mongoose = require("mongoose");
+const { ObjectId } = mongoose.Types;
 const Task = require("../models/Task");
 const Tags = require("../models/Tags");
 const TaskUserJoin = require("../models/TaskUserJoin");
@@ -12,7 +13,7 @@ router.post("/create", async (req, res) => {
   try {
     const taskDoc = await Task.create({
       title: req.body.title,
-      description: req.body.title,
+      description: req.body.description,
     });
     TaskUserJoin.create({
       user_id: req.body.user_id,
@@ -21,7 +22,7 @@ router.post("/create", async (req, res) => {
 
     const tags = req.body.tags;
     var tagTaskJoinEntries = [];
-    if ((tags !== null) & (tags.length > 0)) {
+    if (tags && Array.isArray(tags) && tags.length > 0) {
       for (var tag of tags) {
         tagTaskJoinEntries.push({ task_id: taskDoc._id, tag_id: tag });
       }
@@ -34,21 +35,9 @@ router.post("/create", async (req, res) => {
   } catch (err) {
     console.error("Abort Transation, ", err);
     await session.abortTransaction();
-    res.status(400).json(err.message);
+    res.status(400).json({ Error: err.message });
   } finally {
     await session.endSession();
-  }
-});
-
-//Get a task by id
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const taskDoc = await Task.findById(id);
-    res.json(taskDoc);
-  } catch (err) {
-    console.error(err);
-    res.status(400).json("Error retrieving task with id: " + id);
   }
 });
 
@@ -65,7 +54,34 @@ router.get("/:id/tags", async (req, res) => {
     res.json(tagDocs);
   } catch (err) {
     console.error(err);
-    res.status(400).json("Error fetching tags for task with id: " + id);
+    res.status(400).json({ Error: err.message });
+  }
+});
+
+//Search for a task
+router.post("/search", async (req, res) => {
+  try {
+    var query = Task.find();
+
+    if (req.body.id) {
+      if (!ObjectId.isValid(req.body.id)) throw new Error("Invalid id");
+      query.findOne({ _id: req.body.id });
+    } else {
+      if (req.body.text) {
+        query.find({ $text: { $search: req.body.text } }).sort({
+          score: { $meta: "textScore" },
+        });
+      }
+      if (req.body.status) {
+        query.find({ status: req.body.status.toUpperCase() });
+      }
+    }
+    query.exec().then((taskDocs) => {
+      res.json(taskDocs);
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ Error: err.message });
   }
 });
 
@@ -81,7 +97,7 @@ router.patch("/:id", async (req, res) => {
     res.json(updatedTaskDoc);
   } catch (err) {
     console.error(err);
-    res.status(400).json("Error updating task with id: " + id);
+    res.status(400).json({ Error: err.message });
   }
 });
 
@@ -101,7 +117,7 @@ router.delete("/:id", async (req, res) => {
   } catch (err) {
     console.error("Abort Transation, ", err);
     await session.abortTransaction();
-    res.status(400).json(err.message);
+    res.status(400).json({ Error: err.message });
   } finally {
     await session.endSession();
   }

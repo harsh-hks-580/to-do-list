@@ -16,5 +16,7 @@ const TaskSchema = new Schema(
   }
 );
 
+TaskSchema.index({ title: "text", description: "text" });
+
 const TaskModel = model("Task", TaskSchema);
 module.exports = TaskModel;
