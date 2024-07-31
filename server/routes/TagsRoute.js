@@ -30,7 +30,7 @@ router.get("/:id", async (req, res) => {
     res.json(tagDoc);
   } catch (err) {
     console.error(err);
-    res.status(400).json("Error retrieving tag with id: " + id);
+    res.status(400).json({ Error: err.message });
   }
 });
 
@@ -47,7 +47,7 @@ router.get("/:id/tasks", async (req, res) => {
     res.json(taskDocs);
   } catch (err) {
     console.error(err);
-    res.status(400).json("Error fetching tags for task with id: " + id);
+    res.status(400).json({ Error: err.message });
   }
 });
 
@@ -66,7 +66,7 @@ router.delete("/:id", async (req, res) => {
   } catch (err) {
     console.error("Abort Transation, ", err);
     await session.abortTransaction();
-    res.status(400).json(err.message);
+    res.status(400).json({ Error: err.message });
   } finally {
     await session.endSession();
   }
