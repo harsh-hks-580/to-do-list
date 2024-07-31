@@ -3,7 +3,7 @@ const { Schema, model } = mongoose;
 
 const TagSchema = new Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
   },
   {
     timestamps: true,
