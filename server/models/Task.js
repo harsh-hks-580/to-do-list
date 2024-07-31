@@ -10,6 +10,7 @@ const TaskSchema = new Schema(
       enum: ["PENDING", "COMPLETED"],
       default: "PENDING",
     },
+    user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   {
     timestamps: true,

@@ -10,6 +10,7 @@ router.post("/create", async (req, res) => {
   try {
     const tagDoc = await Tag.create({
       name: req.body.name,
+      user_id: req.userInfo.id,
     });
 
     await session.commitTransaction();
@@ -20,6 +21,16 @@ router.post("/create", async (req, res) => {
     res.json(err);
   } finally {
     await session.endSession();
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const tagDocs = await Tag.find({ user_id: req.userInfo.id });
+    res.json(tagDocs);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ Error: err.message });
   }
 });
 
