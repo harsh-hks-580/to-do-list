@@ -18,8 +18,8 @@ app.use(cors());
 const tasksRoute = require("./routes/TasksRoute");
 const tagsRoute = require("./routes/TagsRoute");
 
-app.use("/", tasksRoute);
-app.use("/", tagsRoute);
+app.use("/tasks", tasksRoute);
+app.use("/tags", tagsRoute);
 
 const port = process.env.PORT;
 
